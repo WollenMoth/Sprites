@@ -49,7 +49,7 @@ def get_sprites(sprite_sheet: pygame.Surface, size: Coordinate) -> Tuple[pygame.
         surface = pygame.Surface(size, pygame.SRCALPHA, 32)
         rect = pygame.Rect(i, 0, size[0], size[1])
         surface.blit(sprite_sheet, (0, 0), rect)
-        sprites.append(surface)
+        sprites.append(pygame.transform.scale2x(surface))
 
     return tuple(sprites)
 
