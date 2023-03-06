@@ -20,7 +20,7 @@ Direction = Enum("Direction", "left right up down")
 
 WIDTH, HEIGHT = 800, 600
 
-FPS = 60
+FPS = 24
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
