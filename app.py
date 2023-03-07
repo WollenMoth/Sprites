@@ -8,15 +8,9 @@ Autores:
     - Crhistian André Díaz Bonfigli Pastrana (201829189)
 """
 
-from typing import Tuple, Union
-from enum import Enum
-from os import listdir
-from os.path import join, isfile
 import pygame
+from player import Player
 
-Coordinate = Tuple[int, int]
-
-Direction = Enum("Direction", "left right up down")
 
 WIDTH, HEIGHT = 800, 600
 
@@ -24,10 +18,8 @@ FPS = 24
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 
 PLAYER_SIZE = (32, 32)
-PLAYER_VELOCITY = 5
 
 pygame.init()
 
@@ -36,105 +28,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Sprites")
 
 
-def flip(sprites: Tuple[pygame.Surface, ...]) -> Tuple[pygame.Surface, ...]:
-    """Invierte los sprites"""
-    return tuple(pygame.transform.flip(s, True, False) for s in sprites)
-
-
-def get_sprites(sprite_sheet: pygame.Surface, size: Coordinate) -> Tuple[pygame.Surface, ...]:
-    """Obtiene los sprites de un sprite sheet"""
-    sprites = []
-
-    for i in range(0, sprite_sheet.get_width(), size[0]):
-        surface = pygame.Surface(size, pygame.SRCALPHA, 32)
-        rect = pygame.Rect(i, 0, size[0], size[1])
-        surface.blit(sprite_sheet, (0, 0), rect)
-        sprites.append(pygame.transform.scale2x(surface))
-
-    return tuple(sprites)
-
-
-def load_sprites(
-        directory: str,
-        size: Coordinate,
-        flipped: bool = False
-) -> dict[str, Tuple[pygame.Surface, ...]]:
-    """Carga los sprites de un directorio"""
-    path = join("images", directory)
-    images = [f for f in listdir(path) if isfile(join(path, f))]
-
-    all_sprites = {}
-
-    for image in images:
-        sprite_sheet = pygame.image.load(join(path, image)).convert_alpha()
-
-        sprites = get_sprites(sprite_sheet, size)
-        name = image.replace(".png", "")
-
-        if flipped:
-            all_sprites[name + "_right"] = sprites
-            all_sprites[name + "_left"] = flip(sprites)
-        else:
-            all_sprites[name] = sprites
-
-    return all_sprites
-
-
-class Player(pygame.sprite.Sprite):
-    """Representa al jugador"""
-
-    def __init__(self, start: Coordinate, size: Coordinate) -> None:
-        """Inicializa el jugador"""
-        super().__init__()
-
-        self.color = RED
-        self.velocity = PLAYER_VELOCITY
-        self.rect = pygame.Rect(start, size)
-        self.mask = None
-        self.direction: Union[Direction, None] = None
-        self.animation_count = 0
-        self.sprites = load_sprites("", size, True)
-        self.sprite = "idle_right"
-
-    def move(self, keys: pygame.key.ScancodeWrapper) -> None:
-        """Mueve al jugador"""
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= self.velocity
-            self.set_direction(Direction.left)
-            self.sprite = "run_left"
-        elif keys[pygame.K_RIGHT]:
-            self.rect.x += self.velocity
-            self.set_direction(Direction.right)
-            self.sprite = "run_right"
-        elif keys[pygame.K_UP]:
-            self.rect.y -= self.velocity
-            self.set_direction(Direction.up)
-            self.sprite = "jump" + ("_right" if "right" in self.sprite else "_left")
-        elif keys[pygame.K_DOWN]:
-            self.rect.y += self.velocity
-            self.set_direction(Direction.down)
-            self.sprite = "fall" + ("_right" if "right" in self.sprite else "_left")
-        else:
-            self.set_direction(None)
-            self.sprite = "idle" + ("_right" if "right" in self.sprite else "_left")
-
-    def set_direction(self, direction: Union[Direction, None]) -> None:
-        """Cambia la dirección del jugador"""
-        if self.direction != direction:
-            self.direction = direction
-            self.animation_count = 0
-
-    def draw(self) -> None:
-        """Dibuja al jugador"""
-        screen.blit(self.sprites[self.sprite][self.animation_count], self.rect)
-        self.animation_count = (self.animation_count + 1) % len(self.sprites[self.sprite])
-
-
 def draw(player: Player) -> None:
     """Dibuja todos los elementos en la pantalla"""
     screen.fill(BLACK)
 
-    player.draw()
+    player.draw(screen)
 
     pygame.display.flip()
 
